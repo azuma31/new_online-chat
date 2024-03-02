@@ -72,36 +72,65 @@
         </div>
     </div>
 
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js"></script>
+
     <script>
+        // Firebaseの設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeiAPMwJZKXsVlhIl4RP5CV_YK65KavwI",
+            authDomain: "online-chat2-ad70c.firebaseapp.com",
+            projectId: "online-chat2-ad70c",
+            storageBucket: "online-chat2-ad70c.appspot.com",
+            messagingSenderId: "596500876664",
+            appId: "1:596500876664:web:3835862f6954082d910c8d",
+            measurementId: "G-D7KQ1NWQ90"
+        };
+
+        // Firebaseの初期化
+        firebase.initializeApp(firebaseConfig);
+
         const chatWindow = document.getElementById('chat-window');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const clearBtn = document.getElementById('clear-btn');
+        const messagesRef = firebase.database().ref('messages');
 
-        // Load previous messages from local storage
-        let messages = JSON.parse(localStorage.getItem('messages')) || [];
-
-        function displayMessages() {
-            chatWindow.innerHTML = messages.map(message => `<div>${message}</div>`).join('');
+        function displayMessages(snapshot) {
+            chatWindow.innerHTML = '';
+            snapshot.forEach(function (childSnapshot) {
+                var message = childSnapshot.val();
+                var messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                chatWindow.appendChild(messageElement);
+            });
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        displayMessages();
+        // 初回表示
+        messagesRef.once('value', function (snapshot) {
+            displayMessages(snapshot);
+        });
 
+        // メッセージ送信
         sendBtn.addEventListener('click', () => {
             const message = messageInput.value.trim();
             if (message) {
-                messages.push(message);
-                localStorage.setItem('messages', JSON.stringify(messages));
-                displayMessages();
+                messagesRef.push(message);
                 messageInput.value = '';
             }
         });
 
+        // 履歴削除
         clearBtn.addEventListener('click', () => {
-            localStorage.removeItem('messages');
-            messages = [];
-            displayMessages();
+            messagesRef.remove();
+            chatWindow.innerHTML = '';
+        });
+
+        // 新しいメッセージが追加されたときのリスナー
+        messagesRef.on('child_added', function (snapshot) {
+            displayMessages(snapshot);
         });
     </script>
 </body>
