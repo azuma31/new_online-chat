@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>シンプルなチャットアプリ</title>
+    <title>Firebaseチャットアプリ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +29,7 @@
             border-radius: 5px 0 0 5px;
         }
 
-        #send-btn, #clear-btn {
+        #send-btn {
             padding: 8px 15px;
             border: none;
             background-color: #4CAF50;
@@ -39,17 +39,9 @@
             display: inline-block;
         }
 
-            #send-btn:hover, #clear-btn:hover {
-                background-color: #45a049;
-            }
-
-        #clear-btn {
-            background-color: #f44336;
+        #send-btn:hover {
+            background-color: #45a049;
         }
-
-            #clear-btn:hover {
-                background-color: #d32f2f;
-            }
 
         .container {
             max-width: 600px;
@@ -63,74 +55,71 @@
 </head>
 <body>
     <div class="container">
-        <h2>シンプルなチャットアプリ</h2>
+        <h2>Firebaseチャットアプリ</h2>
         <div id="chat-window"></div>
         <div style="margin-top: 10px;">
             <input type="text" id="message-input" placeholder="メッセージを入力...">
             <button id="send-btn">送信</button>
-            <button id="clear-btn">履歴削除</button>
         </div>
     </div>
 
     <!-- Firebase JavaScript SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js"></script>
 
     <script>
         // Firebaseの設定
         const firebaseConfig = {
-            apiKey: "AIzaSyBeiAPMwJZKXsVlhIl4RP5CV_YK65KavwI",
-            authDomain: "online-chat2-ad70c.firebaseapp.com",
-            projectId: "online-chat2-ad70c",
-            storageBucket: "online-chat2-ad70c.appspot.com",
-            messagingSenderId: "596500876664",
-            appId: "1:596500876664:web:3835862f6954082d910c8d",
-            measurementId: "G-D7KQ1NWQ90"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        // Firebaseの初期化
+        // Firebaseを初期化
         firebase.initializeApp(firebaseConfig);
+
+        // Firebase Realtime Databaseの参照を取得
+        const database = firebase.database();
 
         const chatWindow = document.getElementById('chat-window');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
-        const clearBtn = document.getElementById('clear-btn');
-        const messagesRef = firebase.database().ref('messages');
 
-        function displayMessages(snapshot) {
-            chatWindow.innerHTML = '';
-            snapshot.forEach(function (childSnapshot) {
-                var message = childSnapshot.val();
-                var messageElement = document.createElement('div');
-                messageElement.textContent = message;
-                chatWindow.appendChild(messageElement);
-            });
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        // 初回表示
-        messagesRef.once('value', function (snapshot) {
-            displayMessages(snapshot);
-        });
-
-        // メッセージ送信
-        sendBtn.addEventListener('click', () => {
+        // メッセージを送信する関数
+        function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
-                messagesRef.push(message);
-                messageInput.value = '';
+                // Firebase Realtime Databaseにメッセージを追加
+                database.ref('messages').push().set({
+                    text: message,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                messageInput.value = ''; // 入力フィールドをクリア
             }
-        });
+        }
 
-        // 履歴削除
-        clearBtn.addEventListener('click', () => {
-            messagesRef.remove();
-            chatWindow.innerHTML = '';
-        });
+        // メッセージを受信して表示する関数
+        function displayMessages(snapshot) {
+            chatWindow.innerHTML = ''; // 表示をクリア
+            snapshot.forEach(childSnapshot => {
+                const message = childSnapshot.val();
+                const messageElement = document.createElement('div');
+                messageElement.innerText = message.text;
+                chatWindow.appendChild(messageElement);
+            });
+        }
 
-        // 新しいメッセージが追加されたときのリスナー
-        messagesRef.on('child_added', function (snapshot) {
+        // メッセージを送信ボタンのクリックで送信
+        sendBtn.addEventListener('click', sendMessage);
+
+        // メッセージが追加されたらリアルタイムで表示
+        database.ref('messages').on('value', snapshot => {
             displayMessages(snapshot);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // スクロールを一番下に
         });
     </script>
 </body>
