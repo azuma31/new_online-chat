@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルなチャットアプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f1f1;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #chat-window {
+            width: 300px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        #message-input {
+            width: calc(100% - 70px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+
+        #send-btn, #clear-btn {
+            padding: 8px 15px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+            #send-btn:hover, #clear-btn:hover {
+                background-color: #45a049;
+            }
+
+        #clear-btn {
+            background-color: #f44336;
+        }
+
+            #clear-btn:hover {
+                background-color: #d32f2f;
+            }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>シンプルなチャットアプリ</h2>
+        <div id="chat-window"></div>
+        <div style="margin-top: 10px;">
+            <input type="text" id="message-input" placeholder="メッセージを入力...">
+            <button id="send-btn">送信</button>
+            <button id="clear-btn">履歴削除</button>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
+
+        // Load previous messages from local storage
+        let messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+        function displayMessages() {
+            chatWindow.innerHTML = messages.map(message => `<div>${message}</div>`).join('');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        displayMessages();
+
+        sendBtn.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                messages.push(message);
+                localStorage.setItem('messages', JSON.stringify(messages));
+                displayMessages();
+                messageInput.value = '';
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            localStorage.removeItem('messages');
+            messages = [];
+            displayMessages();
+        });
+    </script>
+</body>
+</html>
