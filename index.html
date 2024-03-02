@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebaseチャットアプリ</title>
+    <title>シンプルなチャットアプリ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +29,7 @@
             border-radius: 5px 0 0 5px;
         }
 
-        #send-btn {
+        #send-btn, #clear-btn {
             padding: 8px 15px;
             border: none;
             background-color: #4CAF50;
@@ -39,8 +39,16 @@
             display: inline-block;
         }
 
-        #send-btn:hover {
+        #send-btn:hover, #clear-btn:hover {
             background-color: #45a049;
+        }
+
+        #clear-btn {
+            background-color: #f44336;
+        }
+
+        #clear-btn:hover {
+            background-color: #d32f2f;
         }
 
         .container {
@@ -55,11 +63,12 @@
 </head>
 <body>
     <div class="container">
-        <h2>Firebaseチャットアプリ</h2>
+        <h2>シンプルなチャットアプリ</h2>
         <div id="chat-window"></div>
         <div style="margin-top: 10px;">
             <input type="text" id="message-input" placeholder="メッセージを入力...">
             <button id="send-btn">送信</button>
+            <button id="clear-btn">履歴削除</button>
         </div>
     </div>
 
@@ -88,6 +97,7 @@
         const chatWindow = document.getElementById('chat-window');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
 
         // メッセージを送信する関数
         function sendMessage() {
@@ -102,6 +112,9 @@
             }
         }
 
+        // メッセージを送信ボタンのクリックで送信
+        sendBtn.addEventListener('click', sendMessage);
+
         // メッセージを受信して表示する関数
         function displayMessages(snapshot) {
             chatWindow.innerHTML = ''; // 表示をクリア
@@ -113,14 +126,21 @@
             });
         }
 
-        // メッセージを送信ボタンのクリックで送信
-        sendBtn.addEventListener('click', sendMessage);
-
         // メッセージが追加されたらリアルタイムで表示
         database.ref('messages').on('value', snapshot => {
             displayMessages(snapshot);
             chatWindow.scrollTop = chatWindow.scrollHeight; // スクロールを一番下に
         });
+
+        // 履歴を削除する関数
+        function clearMessages() {
+            // Firebase Realtime Databaseからメッセージを削除
+            database.ref('messages').remove();
+            chatWindow.innerHTML = ''; // 表示もクリア
+        }
+
+        // 履歴削除ボタンのクリックで履歴を削除
+        clearBtn.addEventListener('click', clearMessages);
     </script>
 </body>
 </html>
